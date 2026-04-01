@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — GitHub Finder</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+        /* ── RESET ── */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ── VARIABLES ── */
+        :root {
+            --bg-root:     #080c14;
+            --bg-card:     #0d1422;
+            --bg-input:    #141e30;
+            --border:      rgba(99, 179, 237, 0.12);
+            --border-md:   rgba(99, 179, 237, 0.25);
+            --border-hi:   rgba(99, 179, 237, 0.45);
+            --accent:      #63b3ed;
+            --accent-dark: #1a5fc8;
+            --accent-dim:  rgba(99, 179, 237, 0.08);
+            --accent-glow: rgba(99, 179, 237, 0.12);
+            --danger:      #e53e5a;
+            --danger-dark: #8b1a2e;
+            --danger-dim:  rgba(229, 62, 90, 0.10);
+            --text-hi:     #e8edf8;
+            --text-md:     #8fa8c8;
+            --text-lo:     #4a6285;
+            --text-ph:     #3d5273;
+            --radius-lg:   14px;
+            --radius-md:   10px;
+            --radius-sm:   8px;
+            --font:        'Space Grotesk', sans-serif;
+            --font-mono:   'JetBrains Mono', monospace;
+        }
+
+        /* ── LIGHT MODE ── */
+        body.light {
+            --bg-root:     #eef3fb;
+            --bg-card:     #ffffff;
+            --bg-input:    #f1f5fb;
+            --border:      rgba(30, 100, 200, 0.10);
+            --border-md:   rgba(30, 100, 200, 0.22);
+            --border-hi:   rgba(30, 100, 200, 0.40);
+            --accent:      #1e64c8;
+            --accent-dark: #0f3d8a;
+            --accent-dim:  rgba(30, 100, 200, 0.07);
+            --accent-glow: rgba(30, 100, 200, 0.10);
+            --danger:      #d12a45;
+            --danger-dark: #7a1526;
+            --danger-dim:  rgba(209, 42, 69, 0.08);
+            --text-hi:     #0d1422;
+            --text-md:     #3a5280;
+            --text-lo:     #6b84a8;
+            --text-ph:     #8fa8c8;
+        }
+
+        /* ── BODY ── */
+        body {
+            font-family: var(--font);
+            background: var(--bg-root);
+            color: var(--text-hi);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            position: relative;
+            overflow-x: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* ── GRID TEXTURE ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                    linear-gradient(var(--border) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 52px 52px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── AMBIENT GLOW ORB ── */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -180px;
+            left: -180px;
+            width: 560px;
+            height: 560px;
+            background: radial-gradient(circle, rgba(99, 179, 237, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: drift 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes drift {
+            to { transform: translate(100px, 60px); }
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── CONTAINER ── */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 460px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 48px 44px;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03);
+            animation: rise 0.45s cubic-bezier(0.4,0,0.2,1) both;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.4;
+            border-radius: 20px 20px 0 0;
+        }
+
+        /* ── PAGE BADGE ── */
+        .page-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 14px;
+            background: var(--accent-dim);
+            border: 1px solid var(--border-md);
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
+        .page-badge::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        /* ── WELCOME ICON ── */
+        .welcome-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: var(--accent-dim);
+            border: 1px solid var(--border-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        /* ── HEADINGS ── */
+        h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-hi);
+            line-height: 1.22;
+            letter-spacing: -0.4px;
+            margin-bottom: 28px;
+        }
+
+        h2 .hl { color: var(--accent); }
+
+        h3 {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-ph);
+            margin: 24px 0 10px;
+        }
+
+        /* ── INPUT WRAPPER ── */
+        .input-wrap {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .input-wrap .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-lo);
+            font-size: 14px;
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        /* ── INPUTS ── */
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 16px 14px 42px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-hi);
+            font-family: var(--font);
+            font-size: 14px;
+            font-weight: 400;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: border 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        input::placeholder { color: var(--text-ph); }
+
+        input:focus {
+            border-color: var(--border-hi);
+            background: var(--bg-root);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* ── BUTTON ── */
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 10px;
+            background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent) 100%);
+            border: none;
+            border-radius: var(--radius-md);
+            color: #ffffff;
+            font-family: var(--font);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.08);
+            box-shadow: 0 8px 28px rgba(99, 179, 237, 0.25);
+        }
+
+        button:active { transform: translateY(0); filter: brightness(0.97); }
+
+        /* ── DANGER BUTTON ── */
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-dark) 0%, var(--danger) 100%);
+        }
+
+        .btn-danger:hover { box-shadow: 0 8px 28px rgba(229, 62, 90, 0.25); }
+
+        /* ── LINKS ── */
+        a {
+            display: inline-block;
+            color: var(--text-lo);
+            font-size: 13px;
+            text-decoration: none;
+            margin-top: 16px;
+            transition: color 0.2s;
+        }
+
+        a:hover { color: var(--accent); }
+        a strong { color: var(--accent); }
+
+        /* ── DIVIDER ── */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        /* ── TOGGLE BUTTON ── */
+        .toggle-btn {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 999;
+            width: 40px !important;
+            height: 40px;
+            padding: 0;
+            margin: 0;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-md);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+
+        .toggle-btn:hover {
+            transform: scale(1.12) rotate(12deg);
+            border-color: var(--border-hi);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* ── BACK BUTTON ── */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 0;
+            margin-bottom: 22px;
+            padding: 5px 14px;
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            background: var(--bg-input);
+            color: var(--text-lo);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            color: var(--accent);
+            border-color: var(--border-md);
+            transform: translateX(-2px);
+            margin-top: 0;
+        }
+
+        /* ── SEARCH ROW ── */
+        .search-row {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .search-row .input-wrap {
+            flex: 1;
+            margin: 0;
+        }
+
+        .search-row button {
+            width: auto;
+            padding: 14px 20px;
+            margin: 0;
+            border-radius: var(--radius-md);
+        }
+
+        /* ── HISTORY LIST ── */
+        .history-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .history-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-md);
+            transition: border 0.2s, color 0.2s;
+        }
+
+        .history-list li::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--border-md);
+            flex-shrink: 0;
+        }
+
+        .history-list li:hover {
+            border-color: var(--border-md);
+            color: var(--text-hi);
+        }
+
+        /* ── PROFILE CARD ── */
+        .profile-card {
+            display: flex;
+            gap: 22px;
+            align-items: flex-start;
+            padding: 22px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            margin-top: 22px;
+        }
+
+        .profile-card img {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            border: 2px solid var(--border-md);
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .profile-info { flex: 1; }
+
+        .p-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-hi);
+            margin-bottom: 3px;
+        }
+
+        .p-login {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .p-bio {
+            font-size: 12px;
+            color: var(--text-lo);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        /* ── CHIPS ── */
+        .chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            background: var(--accent-dim);
+            border: 1px solid var(--border-md);
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        /* ── ERROR ── */
+        p[style*="color:red"],
+        p[style*="color: red"] {
+            color: var(--danger) !important;
+            font-size: 12px;
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: var(--danger-dim);
+            border: 1px solid rgba(229, 62, 90, 0.22);
+            border-radius: var(--radius-sm);
+        }
+
+        /* ════ RESPONSIVE ════ */
+        @media (max-width: 520px) {
+            body {
+                padding: 16px;
+                align-items: flex-start;
+                padding-top: 60px;
+            }
+
+            .container {
+                padding: 32px 20px 36px;
+                border-radius: 18px;
+            }
+
+            h2 {
+                font-size: 22px;
+                margin-bottom: 20px;
+            }
+
+            .search-row { flex-direction: column; }
+            .search-row button { width: 100%; padding: 14px; }
+
+            .profile-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 16px;
+            }
+
+            .chips { justify-content: center; }
+        }
+
+        @media (max-width: 360px) {
+            .container { padding: 24px 14px; }
+            h2 { font-size: 19px; }
+            input[type="text"],
+            input[type="password"],
+            button { font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+<button class="toggle-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+
+<div class="container">
+
+    <div class="page-badge">GitHub Finder</div>
+
+    <h2>Welcome<br>back 👋</h2>
+
+    <form action="/login" method="post">
+
+        <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input type="text" name="username" placeholder="Username" required autocomplete="username">
+        </div>
+
+        <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" name="password" placeholder="Password" required autocomplete="current-password">
+        </div>
+
+        <button type="submit">Login →</button>
+
+    </form>
+
+    <p style="color:red;" th:text="${error}"></p>
+
+    <div class="divider"></div>
+
+    <a href="/signup">Don't have an account? <strong>Sign up</strong></a>
+
+</div>
+
+<script>
+    function toggleTheme() {
+        document.body.classList.toggle('light');
+        document.getElementById('themeBtn').textContent =
+            document.body.classList.contains('light') ? '☀️' : '🌙';
+    }
+</script>
+
+</body>
+</html>
